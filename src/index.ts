@@ -66,3 +66,11 @@ ipcMain.handle("initiateClickOnWindow", (_, handle: number) => {
   mouseClick();
   setCursorPosition(oldCursorPosition.x, oldCursorPosition.y);
 });
+
+ipcMain.handle("activateWindow", (_, handle: number) => {
+  if (!windowExists(handle)) {
+    throw new Error("Incorrect window handle.");
+  }
+
+  showWindow(handle);
+});

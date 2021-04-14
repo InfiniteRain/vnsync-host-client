@@ -81,6 +81,13 @@ export const App = (): JSX.Element => {
   const onToggleReady = async () => {
     setLoading(true);
 
+    const handle = selectedWindowRef.current;
+    const windowExists = await vnSync.windowExists(handle);
+
+    if (windowExists) {
+      await vnSync.activateWindow(handle);
+    }
+
     const result = await emitEvent<undefined>(connection, "toggleReady");
 
     if (result.status !== "ok") {
@@ -98,7 +105,7 @@ export const App = (): JSX.Element => {
       {lastError !== "" && <h3>Error: {lastError}</h3>}
       <div>
         {!isHosting && (
-          <div>
+          <>
             <input
               type="text"
               value={usernameInput}
@@ -109,7 +116,7 @@ export const App = (): JSX.Element => {
             <button onClick={onStartHosting} disabled={isLoading}>
               Start Hosting!
             </button>
-          </div>
+          </>
         )}
         {isHosting && (
           <>

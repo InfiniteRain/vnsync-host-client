@@ -16,4 +16,11 @@ contextBridge.exposeInMainWorld("vnSync", {
 
     return await ipcRenderer.invoke("initiateClickOnWindow", handle);
   },
+  activateWindow: async (handle: number) => {
+    if (typeof handle !== "number") {
+      throw new TypeError("Argument 1 is expected to be a number.");
+    }
+
+    return await ipcRenderer.invoke("activateWindow", handle);
+  },
 });
