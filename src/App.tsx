@@ -11,4 +11,6 @@ function render() {
   );
 }
 
+console.log(vnSync);
+
 render();
