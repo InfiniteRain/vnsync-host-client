@@ -28,7 +28,7 @@ const createWindow = (): void => {
 
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
   mainWindow.webContents.openDevTools();
-  mainWindow.removeMenu();
+  mainWindow.setMenuBarVisibility(false);
 };
 
 app.on("ready", createWindow);
