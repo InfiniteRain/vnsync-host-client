@@ -72,7 +72,9 @@ export const App = (): JSX.Element => {
         return;
       }
 
+      setLoading(true);
       await vnSync.initiateClickOnWindow(handle);
+      setLoading(false);
     });
 
     setConnection(connection);

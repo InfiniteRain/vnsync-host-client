@@ -7216,10 +7216,10 @@ vm-browserify@^1.0.1:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==
 
-vnsync-win32-lib@^0.3.4:
-  version "0.3.4"
-  resolved "https://registry.yarnpkg.com/vnsync-win32-lib/-/vnsync-win32-lib-0.3.4.tgz#c9154ce5aee497d8d10f275e674dfb3d6c0931b3"
-  integrity sha512-gSDev4Vf9zye2biJJg+dLpI+EMYkyn7sIxIPIBQKk7CRaGRi8yWQLR/0iVQzJDr6tMMa9VQ384NPRXvJd1/Tuw==
+vnsync-win32-lib@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/vnsync-win32-lib/-/vnsync-win32-lib-0.4.0.tgz#6b813415b8394ec962d4c1c18c983ef39930a1c8"
+  integrity sha512-t3VQUqZBxhxWtWx0gnvw8nqAxVgIOgmXaEIcadYOP7FjbZSQCe9zaSZLDRPWF8RPgQAk7O8xyoQGZUywZDGyzg==
 
 watchpack-chokidar2@^2.0.1:
   version "2.0.1"

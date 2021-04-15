@@ -6,7 +6,8 @@ import {
   getWindowRectangle,
   showWindow,
   setCursorPosition,
-  mouseClick,
+  leftClickDown,
+  leftClickUp,
 } from "vnsync-win32-lib";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
@@ -53,17 +54,24 @@ ipcMain.handle("windowExists", (_, handle: number) => {
   return windowExists(handle);
 });
 
-ipcMain.handle("initiateClickOnWindow", (_, handle: number) => {
+ipcMain.handle("initiateClickOnWindow", async (_, handle: number) => {
   if (!windowExists(handle)) {
     throw new Error("Incorrect window handle.");
   }
 
-  const oldCursorPosition = getCursorPosition();
   const { left, top, right, bottom } = getWindowRectangle(handle);
+  const centerX = left + (right - left) / 2;
+  const centerY = top + (bottom - top) / 2;
 
   showWindow(handle);
-  setCursorPosition(left + (right - left) / 2, top + (bottom - top) / 2);
-  mouseClick();
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  const oldCursorPosition = getCursorPosition();
+
+  setCursorPosition(centerX, centerY);
+  leftClickDown();
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  leftClickUp();
   setCursorPosition(oldCursorPosition.x, oldCursorPosition.y);
 });
 
