@@ -1,13 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { createStore } from "redux";
-import { rootReducer } from "./reducers/settingsReducer";
+import { createStore, combineReducers } from "redux";
+import { settingsReducer } from "./reducers/settingsReducer";
 import { Provider } from "react-redux";
 import { App } from "./components/App";
 import "./assets/roboto.css";
 import "./assets/main.css";
+import { inputsReducer } from "./reducers/inputsReducer";
 
-const store = createStore(rootReducer);
+const store = createStore(
+  combineReducers({ settings: settingsReducer, inputs: inputsReducer })
+);
 
 ReactDOM.render(
   <Provider store={store}>

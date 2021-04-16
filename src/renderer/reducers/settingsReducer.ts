@@ -30,7 +30,7 @@ const initialState: SettingsState = {
   timeoutBetweenActivationAndInput: 300,
 };
 
-export const rootReducer = (
+export const settingsReducer = (
   state = initialState,
   action: SettingsAction
 ): SettingsState => {

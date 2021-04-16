@@ -26,6 +26,8 @@ import { createMuiTheme } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
 import { useDispatch, useSelector } from "react-redux";
 import { SettingsState, SettingsAction } from "../reducers/settingsReducer";
+import { CombinedAction, CombinedState } from "../reducers";
+import { InputsState } from "../reducers/inputsReducer";
 
 const theme = createMuiTheme({
   palette: {
@@ -68,7 +70,6 @@ export const App = (): JSX.Element => {
   const [isHosting, setHosting] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [lastError, setLastError] = useState("");
-  const [usernameInput, setUsernameInput] = useState("");
 
   const [roomName, setRoomName] = useState("");
   const [roomState, setRoomState] = useState<RoomUser[]>([]);
@@ -77,21 +78,14 @@ export const App = (): JSX.Element => {
   const [windows, setWindows] = useState<Window[]>([]);
   const [selectedWindow, setSelectedWindow] = useState(0);
 
-  const dispatch = useDispatch<Dispatch<SettingsAction>>();
+  const dispatch = useDispatch<Dispatch<CombinedAction>>();
 
-  const settingsState = useSelector<SettingsState, SettingsState>(
-    (state) => state
+  const settingsState = useSelector<CombinedState, SettingsState>(
+    (state) => state.settings
   );
-
-  console.log(settingsState);
-
-  /*
-  const [inputSettings, setInputSettings] = useState<InputSettings>({
-    type: "enterKeyPress",
-    isDoubleClick: false,
-    timeoutBetweenDownAndUp: 100,
-    timeoutBetweenActivationAndInput: 300,
-  });*/
+  const inputState = useSelector<CombinedState, InputsState>(
+    (state) => state.inputs
+  );
 
   const selectedWindowRef = useRef<number>();
   const inputSettingsRef = useRef<SettingsState>();
@@ -102,7 +96,7 @@ export const App = (): JSX.Element => {
   const onStartHosting = () => {
     setLoading(true);
 
-    const username = usernameInput.trim();
+    const username = inputState.username.trim();
     const connection = io("wss://vnsync-server-33vh3.ondigitalocean.app");
 
     connection.on("connect", async () => {
@@ -211,8 +205,13 @@ export const App = (): JSX.Element => {
                   label="Username"
                   autoComplete="username"
                   autoFocus
-                  value={usernameInput}
-                  onChange={(e) => setUsernameInput(e.target.value)}
+                  value={inputState.username}
+                  onChange={(e) => {
+                    dispatch({
+                      type: "INPUT_USERNAME",
+                      payload: e.target.value,
+                    });
+                  }}
                   disabled={isLoading}
                 />
                 <Button

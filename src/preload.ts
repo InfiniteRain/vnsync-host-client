@@ -1,12 +1,12 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { InputSettings } from "./renderer/interfaces/InputSettings";
+import { SettingsState } from "./renderer/reducers/settingsReducer";
 
 contextBridge.exposeInMainWorld("vnSync", {
   getOpenedWindows: async () => await ipcRenderer.invoke("getOpenedWindows"),
   windowExists: async (handle: number) => {
     return await ipcRenderer.invoke("windowExists", handle);
   },
-  initiateInput: async (handle: number, inputSettings: InputSettings) => {
+  initiateInput: async (handle: number, inputSettings: SettingsState) => {
     return await ipcRenderer.invoke("initiateInput", handle, inputSettings);
   },
   activateWindow: async (handle: number) => {
