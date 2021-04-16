@@ -1,6 +1,14 @@
 declare const vnSync: {
   getOpenedWindows: () => Promise<{ handle: number; title: string }[]>;
   windowExists: (handle: number) => Promise<boolean>;
-  initiateClickOnWindow: (handle: number) => Promise<void>;
+  initiateInput: (
+    handle: number,
+    inputSettings: {
+      type: "leftMouseClick" | "enterKeyPress";
+      isDoubleClick: boolean;
+      timeoutBetweenDownAndUp: number;
+      timeoutBetweenActivationAndInput: number;
+    }
+  ) => Promise<void>;
   activateWindow: (handle: number) => Promise<void>;
 };

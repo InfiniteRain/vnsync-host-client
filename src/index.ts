@@ -8,7 +8,10 @@ import {
   setCursorPosition,
   leftClickDown,
   leftClickUp,
+  enterKeyDown,
+  enterKeyUp,
 } from "vnsync-win32-lib";
+import { InputSettings } from "./renderer/Interfaces/InputSettings";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -54,26 +57,78 @@ ipcMain.handle("windowExists", (_, handle: number) => {
   return windowExists(handle);
 });
 
-ipcMain.handle("initiateClickOnWindow", async (_, handle: number) => {
-  if (!windowExists(handle)) {
-    throw new Error("Incorrect window handle.");
-  }
+const leftMouseClick = async (handle: number, inputSettings: InputSettings) => {
+  const {
+    isDoubleClick,
+    timeoutBetweenDownAndUp,
+    timeoutBetweenActivationAndInput,
+  } = inputSettings;
 
   const { left, top, right, bottom } = getWindowRectangle(handle);
   const centerX = left + (right - left) / 2;
   const centerY = top + (bottom - top) / 2;
 
   showWindow(handle);
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  await new Promise((resolve) =>
+    setTimeout(resolve, timeoutBetweenActivationAndInput)
+  );
 
   const oldCursorPosition = getCursorPosition();
 
   setCursorPosition(centerX, centerY);
+
   leftClickDown();
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, timeoutBetweenDownAndUp));
   leftClickUp();
+
+  if (isDoubleClick) {
+    await new Promise((resolve) =>
+      setTimeout(resolve, timeoutBetweenDownAndUp)
+    );
+    leftClickDown();
+    await new Promise((resolve) =>
+      setTimeout(resolve, timeoutBetweenDownAndUp)
+    );
+    leftClickUp();
+  }
+
   setCursorPosition(oldCursorPosition.x, oldCursorPosition.y);
-});
+};
+
+const enterKeyPress = async (handle: number, inputSettings: InputSettings) => {
+  const {
+    timeoutBetweenDownAndUp,
+    timeoutBetweenActivationAndInput,
+  } = inputSettings;
+
+  showWindow(handle);
+
+  await new Promise((resolve) =>
+    setTimeout(resolve, timeoutBetweenActivationAndInput)
+  );
+
+  enterKeyDown();
+
+  await new Promise((resolve) => setTimeout(resolve, timeoutBetweenDownAndUp));
+
+  enterKeyUp();
+};
+
+ipcMain.handle(
+  "initiateInput",
+  async (_, handle: number, inputSettings: InputSettings) => {
+    if (!windowExists(handle)) {
+      throw new Error("Incorrect window handle.");
+    }
+
+    if (inputSettings.type === "enterKeyPress") {
+      await enterKeyPress(handle, inputSettings);
+      return;
+    }
+
+    await leftMouseClick(handle, inputSettings);
+  }
+);
 
 ipcMain.handle("activateWindow", (_, handle: number) => {
   if (!windowExists(handle)) {
