@@ -3,7 +3,6 @@ import { io, Socket } from "socket.io-client";
 import { RoomUser } from "../interfaces/RoomUser";
 import { emitEvent } from "../helpers";
 import { Window } from "../interfaces/Window";
-import { InputSettings } from "../interfaces/InputSettings";
 import {
   AppBar,
   Avatar,
@@ -26,8 +25,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import { createMuiTheme } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
 import { useDispatch, useSelector } from "react-redux";
-import { State } from "../interfaces/State";
-import { Action } from "../reducer";
+import { SettingsState, SettingsAction } from "../reducers/settingsReducer";
 
 const theme = createMuiTheme({
   palette: {
@@ -79,13 +77,13 @@ export const App = (): JSX.Element => {
   const [windows, setWindows] = useState<Window[]>([]);
   const [selectedWindow, setSelectedWindow] = useState(0);
 
-  const dispatch = useDispatch<Dispatch<Action>>();
+  const dispatch = useDispatch<Dispatch<SettingsAction>>();
 
-  const inputSettings = useSelector<State, State["settings"]>(
-    (state) => state.settings
+  const settingsState = useSelector<SettingsState, SettingsState>(
+    (state) => state
   );
 
-  console.log(inputSettings);
+  console.log(settingsState);
 
   /*
   const [inputSettings, setInputSettings] = useState<InputSettings>({
@@ -96,10 +94,10 @@ export const App = (): JSX.Element => {
   });*/
 
   const selectedWindowRef = useRef<number>();
-  const inputSettingsRef = useRef<InputSettings>();
+  const inputSettingsRef = useRef<SettingsState>();
 
   selectedWindowRef.current = selectedWindow;
-  inputSettingsRef.current = inputSettings;
+  inputSettingsRef.current = settingsState;
 
   const onStartHosting = () => {
     setLoading(true);
@@ -293,7 +291,7 @@ export const App = (): JSX.Element => {
           <label>Double click: </label>
           <input
             type="checkbox"
-            checked={inputSettings.isDoubleClick}
+            checked={settingsState.isDoubleClick}
             onChange={(e) => {
               dispatch({
                 type: "SETTING_DOUBLE_CLICK",
@@ -305,7 +303,7 @@ export const App = (): JSX.Element => {
           <label>Time between input press up and down: </label>
           <input
             type="number"
-            value={inputSettings.timeoutBetweenDownAndUp}
+            value={settingsState.timeoutBetweenDownAndUp}
             onChange={(e) => {
               dispatch({
                 type: "SETTING_TIMEOUT_BDAU",
@@ -317,7 +315,7 @@ export const App = (): JSX.Element => {
           <label>Time between window activation and input: </label>
           <input
             type="number"
-            value={inputSettings.timeoutBetweenActivationAndInput}
+            value={settingsState.timeoutBetweenActivationAndInput}
             onChange={(e) => {
               dispatch({
                 type: "SETTING_TIMEOUT_BAAI",
@@ -328,11 +326,11 @@ export const App = (): JSX.Element => {
           <br />
           <label>Input type: </label>
           <select
-            value={inputSettings.type}
+            value={settingsState.type}
             onChange={(e) => {
               dispatch({
                 type: "SETTING_INPUT_TYPE",
-                payload: e.target.value as State["settings"]["type"],
+                payload: e.target.value as SettingsState["type"],
               });
             }}
           >
