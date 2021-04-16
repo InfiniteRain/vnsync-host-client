@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { InputSettings } from "./renderer/Interfaces/InputSettings";
+import { InputSettings } from "./renderer/interfaces/InputSettings";
 
 contextBridge.exposeInMainWorld("vnSync", {
   getOpenedWindows: async () => await ipcRenderer.invoke("getOpenedWindows"),

@@ -1,6 +1,6 @@
 import { Socket } from "socket.io-client";
-import { FailedResult } from "./Interfaces/FailResult";
-import { SuccessResult } from "./Interfaces/SuccessResult";
+import { FailedResult } from "./interfaces/FailResult";
+import { SuccessResult } from "./interfaces/SuccessResult";
 
 export const emitEvent = async <T = undefined>(
   socket: Socket,

@@ -1,4 +1,4 @@
-import { State } from "./Interfaces/State";
+import { State } from "./interfaces/State";
 
 /*/*
   const [inputSettings, setInputSettings] = useState<InputSettings>({

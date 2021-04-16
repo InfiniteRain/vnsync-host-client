@@ -1,9 +1,9 @@
 import React, { Dispatch, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { RoomUser } from "../Interfaces/RoomUser";
+import { RoomUser } from "../interfaces/RoomUser";
 import { emitEvent } from "../helpers";
-import { Window } from "../Interfaces/Window";
-import { InputSettings } from "../Interfaces/InputSettings";
+import { Window } from "../interfaces/Window";
+import { InputSettings } from "../interfaces/InputSettings";
 import {
   AppBar,
   Avatar,
@@ -26,7 +26,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import { createMuiTheme } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
 import { useDispatch, useSelector } from "react-redux";
-import { State } from "../Interfaces/State";
+import { State } from "../interfaces/State";
 import { Action } from "../reducer";
 
 const theme = createMuiTheme({

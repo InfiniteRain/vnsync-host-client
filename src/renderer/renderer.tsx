@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import { createStore } from "redux";
 import { rootReducer } from "./reducer";
 import { Provider } from "react-redux";
-import { App } from "./Components/App";
+import { App } from "./components/App";
 import "./assets/roboto.css";
 import "./assets/main.css";
 

@@ -11,7 +11,7 @@ import {
   enterKeyDown,
   enterKeyUp,
 } from "vnsync-win32-lib";
-import { InputSettings } from "./renderer/Interfaces/InputSettings";
+import { InputSettings } from "./renderer/interfaces/InputSettings";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
