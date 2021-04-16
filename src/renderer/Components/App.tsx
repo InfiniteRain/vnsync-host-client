@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { Dispatch, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { RoomUser } from "../Interfaces/RoomUser";
 import { emitEvent } from "../helpers";
@@ -25,6 +25,9 @@ import { makeStyles } from "@material-ui/core";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import { createMuiTheme } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
+import { useDispatch, useSelector } from "react-redux";
+import { State } from "../Interfaces/State";
+import { Action } from "../reducer";
 
 const theme = createMuiTheme({
   palette: {
@@ -76,12 +79,21 @@ export const App = (): JSX.Element => {
   const [windows, setWindows] = useState<Window[]>([]);
   const [selectedWindow, setSelectedWindow] = useState(0);
 
+  const dispatch = useDispatch<Dispatch<Action>>();
+
+  const inputSettings = useSelector<State, State["settings"]>(
+    (state) => state.settings
+  );
+
+  console.log(inputSettings);
+
+  /*
   const [inputSettings, setInputSettings] = useState<InputSettings>({
     type: "enterKeyPress",
     isDoubleClick: false,
     timeoutBetweenDownAndUp: 100,
     timeoutBetweenActivationAndInput: 300,
-  });
+  });*/
 
   const selectedWindowRef = useRef<number>();
   const inputSettingsRef = useRef<InputSettings>();
@@ -283,14 +295,9 @@ export const App = (): JSX.Element => {
             type="checkbox"
             checked={inputSettings.isDoubleClick}
             onChange={(e) => {
-              setInputSettings({
-                ...inputSettings,
-                isDoubleClick: e.target.checked,
-              });
-
-              console.log({
-                ...inputSettings,
-                isDoubleClick: e.target.checked,
+              dispatch({
+                type: "SETTING_DOUBLE_CLICK",
+                payload: e.target.checked,
               });
             }}
           />
@@ -300,14 +307,9 @@ export const App = (): JSX.Element => {
             type="number"
             value={inputSettings.timeoutBetweenDownAndUp}
             onChange={(e) => {
-              setInputSettings({
-                ...inputSettings,
-                timeoutBetweenDownAndUp: Number.parseInt(e.target.value),
-              });
-
-              console.log({
-                ...inputSettings,
-                timeoutBetweenDownAndUp: Number.parseInt(e.target.value),
+              dispatch({
+                type: "SETTING_TIMEOUT_BDAU",
+                payload: Number.parseInt(e.target.value),
               });
             }}
           />
@@ -317,18 +319,9 @@ export const App = (): JSX.Element => {
             type="number"
             value={inputSettings.timeoutBetweenActivationAndInput}
             onChange={(e) => {
-              setInputSettings({
-                ...inputSettings,
-                timeoutBetweenActivationAndInput: Number.parseInt(
-                  e.target.value
-                ),
-              });
-
-              console.log({
-                ...inputSettings,
-                timeoutBetweenActivationAndInput: Number.parseInt(
-                  e.target.value
-                ),
+              dispatch({
+                type: "SETTING_TIMEOUT_BAAI",
+                payload: Number.parseInt(e.target.value),
               });
             }}
           />
@@ -337,14 +330,9 @@ export const App = (): JSX.Element => {
           <select
             value={inputSettings.type}
             onChange={(e) => {
-              setInputSettings({
-                ...inputSettings,
-                type: e.target.value as any,
-              });
-
-              console.log({
-                ...inputSettings,
-                type: e.target.value as any,
+              dispatch({
+                type: "SETTING_INPUT_TYPE",
+                payload: e.target.value as State["settings"]["type"],
               });
             }}
           >
