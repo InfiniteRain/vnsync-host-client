@@ -28,6 +28,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { SettingsState, SettingsAction } from "../reducers/settingsReducer";
 import { CombinedAction, CombinedState } from "../reducers";
 import { InputsState } from "../reducers/inputsReducer";
+import { GameState } from "../reducers/gameReducer";
 
 const theme = createMuiTheme({
   palette: {
@@ -67,13 +68,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const App = (): JSX.Element => {
-  const [isHosting, setHosting] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [lastError, setLastError] = useState("");
 
-  const [roomName, setRoomName] = useState("");
-  const [roomState, setRoomState] = useState<RoomUser[]>([]);
-  const [hostUser, setHostUser] = useState<RoomUser | null>(null);
   const [connection, setConnection] = useState<Socket | null>(null);
   const [windows, setWindows] = useState<Window[]>([]);
   const [selectedWindow, setSelectedWindow] = useState(0);
@@ -83,9 +80,30 @@ export const App = (): JSX.Element => {
   const settingsState = useSelector<CombinedState, SettingsState>(
     (state) => state.settings
   );
+
   const inputState = useSelector<CombinedState, InputsState>(
     (state) => state.inputs
   );
+
+  const gameState = useSelector<CombinedState, GameState>(
+    (state) => state.game
+  );
+
+  const setGameHosting = (isHosting: boolean) => {
+    dispatch({ type: "GAME_HOSTING", payload: isHosting });
+  };
+  const setGameRoomName = (roomName: string) => {
+    dispatch({ type: "GAME_ROOM_NAME", payload: roomName });
+  };
+  const setGameRoomState = (roomState: RoomUser[]) => {
+    dispatch({ type: "GAME_ROOM_STATE", payload: roomState });
+  };
+  const setGameHostUser = (hostUser: RoomUser | null) => {
+    dispatch({ type: "GAME_HOST_USER", payload: hostUser });
+  };
+  const resetGame = () => {
+    dispatch({ type: "GAME_RESET" });
+  };
 
   const selectedWindowRef = useRef<number>();
   const inputSettingsRef = useRef<SettingsState>();
@@ -112,27 +130,26 @@ export const App = (): JSX.Element => {
         return;
       }
 
-      setHosting(true);
+      setGameHosting(true);
       setLoading(false);
-      setRoomName(result.data);
+      setGameRoomName(result.data);
       setLastError("");
       setWindows(await vnSync.getOpenedWindows());
     });
 
     connection.on("disconnect", () => {
-      setHosting(false);
+      resetGame();
       setLoading(false);
-      setRoomName("");
-      setRoomState([]);
-      setHostUser(null);
-      setConnection(null);
       setWindows([]);
       setSelectedWindow(0);
+      setConnection(null);
     });
 
     connection.on("roomStateChange", (roomState: RoomUser[]) => {
-      setRoomState(roomState);
-      setHostUser(roomState.find((roomUser) => roomUser.username === username));
+      setGameRoomState(roomState);
+      setGameHostUser(
+        roomState.find((roomUser) => roomUser.username === username)
+      );
     });
 
     connection.on("roomReady", async () => {
@@ -179,7 +196,7 @@ export const App = (): JSX.Element => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {lastError !== "" && <h3>Error: {lastError}</h3>}
-      {!isHosting && (
+      {!gameState.isHosting && (
         <Grid
           container
           spacing={0}
@@ -251,18 +268,18 @@ export const App = (): JSX.Element => {
           </Grid>
         </Grid>
       )}
-      {isHosting && (
+      {gameState.isHosting && (
         <>
-          <h3>Room name: {roomName}</h3>
+          <h3>Room name: {gameState.roomName}</h3>
           <ul>
-            {roomState.map((roomUser) => (
+            {gameState.roomState.map((roomUser) => (
               <li key={roomUser.username}>
                 {roomUser.username} - {!roomUser.isReady && "not"} ready
               </li>
             ))}
           </ul>
           <button onClick={onToggleReady} disabled={isLoading}>
-            {hostUser.isReady ? "Unready" : "Ready"}
+            {gameState.hostUser.isReady ? "Unready" : "Ready"}
           </button>
           <hr />
           <select

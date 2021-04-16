@@ -7,9 +7,14 @@ import { App } from "./components/App";
 import "./assets/roboto.css";
 import "./assets/main.css";
 import { inputsReducer } from "./reducers/inputsReducer";
+import { gameReducer } from "./reducers/gameReducer";
 
 const store = createStore(
-  combineReducers({ settings: settingsReducer, inputs: inputsReducer })
+  combineReducers({
+    settings: settingsReducer,
+    inputs: inputsReducer,
+    game: gameReducer,
+  })
 );
 
 ReactDOM.render(
