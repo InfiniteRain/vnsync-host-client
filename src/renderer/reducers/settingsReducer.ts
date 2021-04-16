@@ -1,4 +1,5 @@
 export interface SettingsState {
+  selectedWindow: number;
   type: "leftMouseClick" | "enterKeyPress";
   isDoubleClick: boolean;
   timeoutBetweenDownAndUp: number;
@@ -6,6 +7,10 @@ export interface SettingsState {
 }
 
 export type SettingsAction =
+  | {
+      type: "SETTING_SELECTED_WINDOW";
+      payload: number;
+    }
   | {
       type: "SETTING_INPUT_TYPE";
       payload: "enterKeyPress" | "leftMouseClick";
@@ -24,6 +29,7 @@ export type SettingsAction =
     };
 
 const initialState: SettingsState = {
+  selectedWindow: 0,
   type: "enterKeyPress",
   isDoubleClick: false,
   timeoutBetweenDownAndUp: 100,
@@ -35,6 +41,11 @@ export const settingsReducer = (
   action: SettingsAction
 ): SettingsState => {
   switch (action.type) {
+    case "SETTING_SELECTED_WINDOW":
+      return {
+        ...state,
+        selectedWindow: action.payload,
+      };
     case "SETTING_INPUT_TYPE":
       return {
         ...state,

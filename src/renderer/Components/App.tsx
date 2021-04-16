@@ -73,7 +73,7 @@ export const App = (): JSX.Element => {
 
   const [connection, setConnection] = useState<Socket | null>(null);
   const [windows, setWindows] = useState<Window[]>([]);
-  const [selectedWindow, setSelectedWindow] = useState(0);
+  //const [selectedWindow, setSelectedWindow] = useState(0);
 
   const dispatch = useDispatch<Dispatch<CombinedAction>>();
 
@@ -81,9 +81,29 @@ export const App = (): JSX.Element => {
     (state) => state.settings
   );
 
+  const setSettingSelectedWindow = (handle: number) => {
+    dispatch({ type: "SETTING_SELECTED_WINDOW", payload: handle });
+  };
+  const setSettingInputType = (type: "enterKeyPress" | "leftMouseClick") => {
+    dispatch({ type: "SETTING_INPUT_TYPE", payload: type });
+  };
+  const setSettingDoubleClick = (enabled: boolean) => {
+    dispatch({ type: "SETTING_DOUBLE_CLICK", payload: enabled });
+  };
+  const setSettingTimeoutBdau = (timeout: number) => {
+    dispatch({ type: "SETTING_TIMEOUT_BDAU", payload: timeout });
+  };
+  const setSettingTimeoutBaai = (timeout: number) => {
+    dispatch({ type: "SETTING_TIMEOUT_BAAI", payload: timeout });
+  };
+
   const inputState = useSelector<CombinedState, InputsState>(
     (state) => state.inputs
   );
+
+  const setInputUsername = (username: string) => {
+    dispatch({ type: "INPUT_USERNAME", payload: username });
+  };
 
   const gameState = useSelector<CombinedState, GameState>(
     (state) => state.game
@@ -108,7 +128,7 @@ export const App = (): JSX.Element => {
   const selectedWindowRef = useRef<number>();
   const inputSettingsRef = useRef<SettingsState>();
 
-  selectedWindowRef.current = selectedWindow;
+  selectedWindowRef.current = settingsState.selectedWindow;
   inputSettingsRef.current = settingsState;
 
   const onStartHosting = () => {
@@ -141,7 +161,7 @@ export const App = (): JSX.Element => {
       resetGame();
       setLoading(false);
       setWindows([]);
-      setSelectedWindow(0);
+      setSettingSelectedWindow(0);
       setConnection(null);
     });
 
@@ -224,10 +244,7 @@ export const App = (): JSX.Element => {
                   autoFocus
                   value={inputState.username}
                   onChange={(e) => {
-                    dispatch({
-                      type: "INPUT_USERNAME",
-                      payload: e.target.value,
-                    });
+                    setInputUsername(e.target.value);
                   }}
                   disabled={isLoading}
                 />
@@ -285,9 +302,9 @@ export const App = (): JSX.Element => {
           <select
             disabled={isLoading}
             onChange={(e) => {
-              setSelectedWindow(Number.parseInt(e.target.value));
+              setSettingSelectedWindow(Number.parseInt(e.target.value));
             }}
-            defaultValue={selectedWindow}
+            defaultValue={settingsState.selectedWindow}
           >
             <option value="0">-</option>
             {windows.map((window) => (
@@ -309,10 +326,7 @@ export const App = (): JSX.Element => {
             type="checkbox"
             checked={settingsState.isDoubleClick}
             onChange={(e) => {
-              dispatch({
-                type: "SETTING_DOUBLE_CLICK",
-                payload: e.target.checked,
-              });
+              setSettingDoubleClick(e.target.checked);
             }}
           />
           <br />
@@ -321,10 +335,7 @@ export const App = (): JSX.Element => {
             type="number"
             value={settingsState.timeoutBetweenDownAndUp}
             onChange={(e) => {
-              dispatch({
-                type: "SETTING_TIMEOUT_BDAU",
-                payload: Number.parseInt(e.target.value),
-              });
+              setSettingTimeoutBdau(Number.parseInt(e.target.value));
             }}
           />
           <br />
@@ -333,10 +344,7 @@ export const App = (): JSX.Element => {
             type="number"
             value={settingsState.timeoutBetweenActivationAndInput}
             onChange={(e) => {
-              dispatch({
-                type: "SETTING_TIMEOUT_BAAI",
-                payload: Number.parseInt(e.target.value),
-              });
+              setSettingTimeoutBaai(Number.parseInt(e.target.value));
             }}
           />
           <br />
@@ -344,10 +352,7 @@ export const App = (): JSX.Element => {
           <select
             value={settingsState.type}
             onChange={(e) => {
-              dispatch({
-                type: "SETTING_INPUT_TYPE",
-                payload: e.target.value as SettingsState["type"],
-              });
+              setSettingInputType(e.target.value as SettingsState["type"]);
             }}
           >
             <option value="enterKeyPress">Enter key press</option>
