@@ -10,6 +10,7 @@ export type SocketAction =
       payload: {
         username: string;
         onComplete: () => void;
+        onError: (message: string) => void;
       };
     }
   | {
@@ -46,6 +47,7 @@ export const createSocketMiddleware = (url: string): Middleware => {
 
           if (result.status !== "ok") {
             connection.disconnect();
+            action.payload.onError(result.failMessage);
             return;
           }
 
@@ -84,6 +86,7 @@ export const createSocketMiddleware = (url: string): Middleware => {
 
         connection.on("connect_error", (error) => {
           console.error(error);
+          action.payload.onError("Conncetion error.");
         });
 
         return;

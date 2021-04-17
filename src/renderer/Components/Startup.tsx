@@ -7,6 +7,7 @@ import {
   TextField,
   Button,
 } from "@material-ui/core";
+import { Alert, AlertTitle } from "@material-ui/lab";
 import PersonalVideoOutlined from "@material-ui/icons/PersonalVideoOutlined";
 import React, { Dispatch, FormEvent, useState } from "react";
 import { useDispatch, useSelector, useStore } from "react-redux";
@@ -41,10 +42,15 @@ const useStyles = makeStyles((theme) => ({
     height: "50%",
     padding: theme.spacing(1),
   },
+  alert: {
+    width: "100%",
+    marginTop: theme.spacing(1),
+  },
 }));
 
 export const Startup = (): JSX.Element => {
   const [isLoading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const history = useHistory();
   const dispatch = useDispatch<Dispatch<CombinedAction>>();
@@ -61,8 +67,9 @@ export const Startup = (): JSX.Element => {
           setLoading(false);
           history.push("/game");
         },
-        onError: () => {
+        onError: (message: string) => {
           setLoading(false);
+          setErrorMessage(message);
         },
       },
     });
@@ -136,6 +143,11 @@ export const Startup = (): JSX.Element => {
                 Start Room
               </Button>
             </form>
+            {errorMessage !== "" && (
+              <Alert severity="error" className={classes.alert}>
+                {errorMessage}
+              </Alert>
+            )}
           </Paper>
         </Grid>
       </Grid>
