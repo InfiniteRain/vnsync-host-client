@@ -7,7 +7,7 @@ import {
   TextField,
   Button,
 } from "@material-ui/core";
-import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
+import PersonalVideoOutlined from "@material-ui/icons/PersonalVideoOutlined";
 import React, { Dispatch, FormEvent, useState } from "react";
 import { useDispatch, useSelector, useStore } from "react-redux";
 import { useHistory } from "react-router-dom";
@@ -61,6 +61,9 @@ export const Startup = (): JSX.Element => {
           setLoading(false);
           history.push("/game");
         },
+        onError: () => {
+          setLoading(false);
+        },
       },
     });
   };
@@ -103,7 +106,7 @@ export const Startup = (): JSX.Element => {
         <Grid item xs={6}>
           <Paper className={classes.paper} elevation={3} variant="outlined">
             <Avatar className={classes.avatar}>
-              <LockOutlinedIcon />
+              <PersonalVideoOutlined />
             </Avatar>
             <Typography component="h1" variant="h5">
               VNSync Host
