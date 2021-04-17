@@ -1,4 +1,4 @@
-import React, { Dispatch, useState } from "react";
+import React, { Dispatch, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { CombinedAction, CombinedState } from "../reducers";
 import { SettingsState } from "../reducers/settingsReducer";
@@ -6,14 +6,62 @@ import { Window } from "../interfaces/Window";
 
 export const Game = (): JSX.Element => {
   const [isLoading, setLoading] = useState(false);
-  const [windows, setWindows] = useState<Window[]>();
+  const [windows, setWindows] = useState<Window[]>([]);
 
   const dispatch = useDispatch<Dispatch<CombinedAction>>();
+
+  const socketToggleReady = (onComplete: () => void): void => {
+    dispatch({ type: "SOCKET_TOGGLE_READY", payload: { onComplete } });
+  };
+
   const gameState = useSelector<CombinedState, CombinedState["game"]>(
     (state) => state.game
   );
 
-  /*
+  const settingsState = useSelector<CombinedState, SettingsState>(
+    (state) => state.settings
+  );
+
+  const setSettingSelectedWindow = (handle: number) => {
+    dispatch({ type: "SETTING_SELECTED_WINDOW", payload: handle });
+  };
+  const setSettingInputType = (type: "enterKeyPress" | "leftMouseClick") => {
+    dispatch({ type: "SETTING_INPUT_TYPE", payload: type });
+  };
+  const setSettingDoubleClick = (enabled: boolean) => {
+    dispatch({ type: "SETTING_DOUBLE_CLICK", payload: enabled });
+  };
+  const setSettingTimeoutBdau = (timeout: number) => {
+    dispatch({ type: "SETTING_TIMEOUT_BDAU", payload: timeout });
+  };
+  const setSettingTimeoutBaai = (timeout: number) => {
+    dispatch({ type: "SETTING_TIMEOUT_BAAI", payload: timeout });
+  };
+
+  const selectedWindowRef = useRef(0);
+  selectedWindowRef.current = settingsState.selectedWindow;
+
+  useEffect(() => {
+    vnSync.getOpenedWindows().then((windows) => {
+      setWindows(windows);
+    });
+  }, []);
+
+  const toggleReady = async () => {
+    setLoading(true);
+
+    const handle = selectedWindowRef.current;
+    const windowExists = await vnSync.windowExists(handle);
+
+    if (windowExists) {
+      await vnSync.activateWindow(handle);
+    }
+
+    socketToggleReady(() => {
+      setLoading(false);
+    });
+  };
+
   return (
     <>
       <h3>Room name: {gameState.roomName}</h3>
@@ -24,7 +72,7 @@ export const Game = (): JSX.Element => {
           </li>
         ))}
       </ul>
-      <button onClick={onToggleReady} disabled={isLoading}>
+      <button onClick={toggleReady} disabled={isLoading}>
         {gameState.hostUser.isReady ? "Unready" : "Ready"}
       </button>
       <hr />
@@ -89,6 +137,26 @@ export const Game = (): JSX.Element => {
       </select>
     </>
   );
-  */
-  return <h1>test</h1>;
+
+  /*<Grid container className={classes.root}>
+          <Grid item xs={6}>
+            <Box className={classes.partialPanel}>
+              <Paper className={classes.panel} square>
+                1
+              </Paper>
+            </Box>
+            <Box className={classes.partialPanel}>
+              <Paper className={classes.panel} square>
+                2
+              </Paper>
+            </Box>
+          </Grid>
+          <Grid item xs={6}>
+            <Box className={classes.panel}>
+              <Paper className={classes.panel} square>
+                3
+              </Paper>
+            </Box>
+          </Grid>
+        </Grid> */
 };

@@ -8,7 +8,7 @@ import {
   Button,
 } from "@material-ui/core";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
-import React, { Dispatch, FormEvent, useEffect, useState } from "react";
+import React, { Dispatch, FormEvent, useState } from "react";
 import { useDispatch, useSelector, useStore } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { CombinedAction, CombinedState } from "../reducers";
@@ -29,7 +29,6 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.primary.main,
   },
   form: {
-    width: "100%", // Fix IE 11 issue.
     marginTop: theme.spacing(1),
   },
   panel: {
@@ -58,7 +57,7 @@ export const Startup = (): JSX.Element => {
       type: "SOCKET_CONNECT",
       payload: {
         username,
-        onConnect: () => {
+        onComplete: () => {
           setLoading(false);
           history.push("/game");
         },
