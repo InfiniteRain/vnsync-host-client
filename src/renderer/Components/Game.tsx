@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { CombinedAction, CombinedState } from "../reducers";
 import { SettingsState } from "../reducers/settingsReducer";
 import { Window } from "../interfaces/Window";
+import { GameState } from "../reducers/gameReducer";
 
 export const Game = (): JSX.Element => {
   const [isLoading, setLoading] = useState(false);
@@ -14,7 +15,7 @@ export const Game = (): JSX.Element => {
     dispatch({ type: "SOCKET_TOGGLE_READY", payload: { onComplete } });
   };
 
-  const gameState = useSelector<CombinedState, CombinedState["game"]>(
+  const gameState = useSelector<CombinedState, GameState>(
     (state) => state.game
   );
 
