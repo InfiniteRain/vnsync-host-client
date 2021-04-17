@@ -4,31 +4,27 @@ import { RoomUser } from "../interfaces/RoomUser";
 import { emitEvent } from "../helpers";
 import { Window } from "../interfaces/Window";
 import {
-  AppBar,
   Avatar,
   Box,
   Button,
-  Checkbox,
-  Container,
   CssBaseline,
-  FormControlLabel,
   Grid,
-  Link,
   Paper,
   TextField,
   ThemeProvider,
-  Toolbar,
   Typography,
+  makeStyles,
+  createMuiTheme,
 } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core";
-import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
-import { createMuiTheme } from "@material-ui/core";
+
 import blue from "@material-ui/core/colors/blue";
 import { useDispatch, useSelector } from "react-redux";
-import { SettingsState, SettingsAction } from "../reducers/settingsReducer";
+import { SettingsState } from "../reducers/settingsReducer";
 import { CombinedAction, CombinedState } from "../reducers";
 import { InputsState } from "../reducers/inputsReducer";
 import { GameState } from "../reducers/gameReducer";
+import { Route, HashRouter } from "react-router-dom";
+import { Startup } from "./Startup";
 
 const theme = createMuiTheme({
   palette: {
@@ -37,49 +33,19 @@ const theme = createMuiTheme({
   },
 });
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    height: "100vh",
-  },
-  paper: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    padding: theme.spacing(3),
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.primary.main,
-  },
-  form: {
-    width: "100%", // Fix IE 11 issue.
-    marginTop: theme.spacing(1),
-  },
-  panel: {
-    width: "100%",
-    height: "100%",
-    padding: theme.spacing(1),
-  },
-  partialPanel: {
-    width: "100%",
-    height: "50%",
-    padding: theme.spacing(1),
-  },
-}));
-
 export const App = (): JSX.Element => {
-  const [isLoading, setLoading] = useState(false);
-  const [lastError, setLastError] = useState("");
+  //const [isLoading, setLoading] = useState(false);
+  //const [lastError, setLastError] = useState("");
 
-  const [connection, setConnection] = useState<Socket | null>(null);
-  const [windows, setWindows] = useState<Window[]>([]);
+  //const [connection, setConnection] = useState<Socket | null>(null);
+  //const [windows, setWindows] = useState<Window[]>([]);
   //const [selectedWindow, setSelectedWindow] = useState(0);
 
-  const dispatch = useDispatch<Dispatch<CombinedAction>>();
+  //const dispatch = useDispatch<Dispatch<CombinedAction>>();
 
-  const settingsState = useSelector<CombinedState, SettingsState>(
+  /*const settingsState = useSelector<CombinedState, SettingsState>(
     (state) => state.settings
-  );
+  ); /*
 
   const setSettingSelectedWindow = (handle: number) => {
     dispatch({ type: "SETTING_SELECTED_WINDOW", payload: handle });
@@ -95,14 +61,6 @@ export const App = (): JSX.Element => {
   };
   const setSettingTimeoutBaai = (timeout: number) => {
     dispatch({ type: "SETTING_TIMEOUT_BAAI", payload: timeout });
-  };
-
-  const inputState = useSelector<CombinedState, InputsState>(
-    (state) => state.inputs
-  );
-
-  const setInputUsername = (username: string) => {
-    dispatch({ type: "INPUT_USERNAME", payload: username });
   };
 
   const gameState = useSelector<CombinedState, GameState>(
@@ -131,64 +89,6 @@ export const App = (): JSX.Element => {
   selectedWindowRef.current = settingsState.selectedWindow;
   inputSettingsRef.current = settingsState;
 
-  const onStartHosting = () => {
-    setLoading(true);
-
-    const username = inputState.username.trim();
-    const connection = io("wss://vnsync-server-33vh3.ondigitalocean.app");
-
-    connection.on("connect", async () => {
-      const result = await emitEvent<string>(
-        connection,
-        "createRoom",
-        username
-      );
-
-      if (result.status !== "ok") {
-        setLastError(result.failMessage);
-        connection.disconnect();
-        return;
-      }
-
-      setGameHosting(true);
-      setLoading(false);
-      setGameRoomName(result.data);
-      setLastError("");
-      setWindows(await vnSync.getOpenedWindows());
-    });
-
-    connection.on("disconnect", () => {
-      resetGame();
-      setLoading(false);
-      setWindows([]);
-      setSettingSelectedWindow(0);
-      setConnection(null);
-    });
-
-    connection.on("roomStateChange", (roomState: RoomUser[]) => {
-      setGameRoomState(roomState);
-      setGameHostUser(
-        roomState.find((roomUser) => roomUser.username === username)
-      );
-    });
-
-    connection.on("roomReady", async () => {
-      const handle = selectedWindowRef.current;
-      const exists = await vnSync.windowExists(handle);
-
-      if (!exists) {
-        alert("Window no longer exists!");
-        return;
-      }
-
-      setLoading(true);
-      await vnSync.initiateInput(handle, inputSettingsRef.current);
-      setLoading(false);
-    });
-
-    setConnection(connection);
-  };
-
   const onToggleReady = async () => {
     setLoading(true);
 
@@ -208,59 +108,24 @@ export const App = (): JSX.Element => {
     }
 
     setLoading(false);
-  };
+  };*/
 
-  const classes = useStyles();
+  return (
+    <HashRouter>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Route path="/" component={Startup} />
+      </ThemeProvider>
+    </HashRouter>
+  );
 
+  /*
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {lastError !== "" && <h3>Error: {lastError}</h3>}
       {!gameState.isHosting && (
-        <Grid
-          container
-          spacing={0}
-          direction="column"
-          alignItems="center"
-          justify="center"
-          className={classes.root}
-        >
-          <Grid item xs={6}>
-            <Paper className={classes.paper} elevation={3} variant="outlined">
-              <Avatar className={classes.avatar}>
-                <LockOutlinedIcon />
-              </Avatar>
-              <Typography component="h1" variant="h5">
-                VNSync Host
-              </Typography>
-              <form className={classes.form} noValidate>
-                <TextField
-                  variant="outlined"
-                  margin="normal"
-                  required
-                  fullWidth
-                  label="Username"
-                  autoComplete="username"
-                  autoFocus
-                  value={inputState.username}
-                  onChange={(e) => {
-                    setInputUsername(e.target.value);
-                  }}
-                  disabled={isLoading}
-                />
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  onClick={onStartHosting}
-                  disabled={isLoading}
-                >
-                  Start Room
-                </Button>
-              </form>
-            </Paper>
-          </Grid>
-        </Grid>
+        
       )}
       {false && (
         <Grid container className={classes.root}>
@@ -362,4 +227,5 @@ export const App = (): JSX.Element => {
       )}
     </ThemeProvider>
   );
+  */
 };

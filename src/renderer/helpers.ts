@@ -13,3 +13,7 @@ export const emitEvent = async <T = undefined>(
     });
   });
 };
+
+export const sleep = async (time: number): Promise<void> => {
+  await new Promise((resolve) => setTimeout(resolve, time));
+};
