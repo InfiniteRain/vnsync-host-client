@@ -7,7 +7,10 @@ import { RoomUser } from "../interfaces/RoomUser";
 export type SocketAction =
   | {
       type: "SOCKET_CONNECT";
-      payload: string;
+      payload: {
+        username: string;
+        onConnect: () => void;
+      };
     }
   | {
       type: "SOCKET_DISCONNECT";
@@ -26,10 +29,8 @@ export const createSocketMiddleware = (url: string): Middleware => {
           throw new Error("An on-going connection already exists.");
         }
 
-        dispatch({ type: "CONNECTION_CONNECTING", payload: true });
-
         connection = io(url);
-        const username = action.payload;
+        const username = action.payload.username;
 
         connection.on("connect", async () => {
           const result = await emitEvent<string>(
@@ -39,22 +40,17 @@ export const createSocketMiddleware = (url: string): Middleware => {
           );
 
           if (result.status !== "ok") {
-            dispatch({
-              type: "CONNECTION_ERROR",
-              payload: result.failMessage,
-            });
             connection.disconnect();
             return;
           }
 
           dispatch({ type: "GAME_ROOM_NAME", payload: result.data });
           dispatch({ type: "GAME_HOSTING", payload: true });
-          dispatch({ type: "CONNECTION_CONNECTED", payload: true });
+          action.payload.onConnect();
         });
 
         connection.on("disconnect", () => {
           dispatch({ type: "GAME_RESET" });
-          dispatch({ type: "CONNECTION_CONNECTED", payload: false });
           connection = null;
         });
 
@@ -82,11 +78,6 @@ export const createSocketMiddleware = (url: string): Middleware => {
 
         connection.on("connect_error", (error) => {
           console.error(error);
-
-          dispatch({
-            type: "CONNECTION_ERROR",
-            payload: error.message,
-          });
         });
 
         return;

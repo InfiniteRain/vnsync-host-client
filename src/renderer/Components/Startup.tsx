@@ -8,8 +8,9 @@ import {
   Button,
 } from "@material-ui/core";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
-import React, { Dispatch, FormEvent, useState } from "react";
+import React, { Dispatch, FormEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector, useStore } from "react-redux";
+import { useHistory } from "react-router-dom";
 import { CombinedAction, CombinedState } from "../reducers";
 import { InputsState } from "../reducers/inputsReducer";
 
@@ -46,12 +47,23 @@ const useStyles = makeStyles((theme) => ({
 export const Startup = (): JSX.Element => {
   const [isLoading, setLoading] = useState(false);
 
+  const history = useHistory();
   const dispatch = useDispatch<Dispatch<CombinedAction>>();
   const store = useStore<CombinedState>();
   const state = store.getState();
 
   const connect = (username: string) => {
-    dispatch({ type: "SOCKET_CONNECT", payload: username });
+    setLoading(true);
+    dispatch({
+      type: "SOCKET_CONNECT",
+      payload: {
+        username,
+        onConnect: () => {
+          setLoading(false);
+          history.push("/game");
+        },
+      },
+    });
   };
 
   const inputState = useSelector<CombinedState, InputsState>(
@@ -61,12 +73,6 @@ export const Startup = (): JSX.Element => {
   const setInputUsername = (username: string) => {
     dispatch({ type: "INPUT_USERNAME", payload: username });
   };
-
-  store.subscribe(() => {
-    const state: CombinedState["connection"] = store.getState().connection;
-
-    setLoading(state.isConnecting);
-  });
 
   const initalizeConnection = () => {
     const state: CombinedState["inputs"] = store.getState().inputs;
@@ -123,7 +129,7 @@ export const Startup = (): JSX.Element => {
                 variant="contained"
                 color="primary"
                 onClick={initalizeConnection}
-                disabled={isLoading || state.inputs.username.length <= 0}
+                disabled={isLoading || state.inputs.username.trim().length <= 0}
               >
                 Start Room
               </Button>

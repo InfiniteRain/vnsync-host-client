@@ -9,11 +9,9 @@ import "./assets/main.css";
 import { inputsReducer } from "./reducers/inputsReducer";
 import { gameReducer } from "./reducers/gameReducer";
 import { createSocketMiddleware } from "./reducers/socketMiddleware";
-import { connectionReducer } from "./reducers/connectionReducer";
 
 const store = createStore(
   combineReducers({
-    connection: connectionReducer,
     settings: settingsReducer,
     inputs: inputsReducer,
     game: gameReducer,
