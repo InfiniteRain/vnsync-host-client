@@ -1,4 +1,5 @@
 declare const vnSync: {
+  getCurrentClipboardEntry: () => Promise<string>;
   getOpenedWindows: () => Promise<{ handle: number; title: string }[]>;
   windowExists: (handle: number) => Promise<boolean>;
   initiateInput: (

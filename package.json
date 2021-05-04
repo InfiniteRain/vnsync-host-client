@@ -1,7 +1,7 @@
 {
   "name": "vnsync-host-client",
   "productName": "vnsync-host-client",
-  "version": "0.0.5",
+  "version": "0.0.8",
   "description": "The host client for VNSync.",
   "main": ".webpack/main",
   "scripts": {

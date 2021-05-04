@@ -3,6 +3,7 @@ import { Middleware } from "redux";
 import { emitEvent } from "../helpers";
 import { RoomUser } from "../interfaces/RoomUser";
 import { SettingsState } from "./settingsReducer";
+import { RoomState } from "../interfaces/RoomState";
 
 export type SocketAction =
   | {
@@ -18,6 +19,10 @@ export type SocketAction =
       payload: {
         onComplete: () => void;
       };
+    }
+  | {
+      type: "SOCKET_UPDATE_CLIPBOARD";
+      payload: string;
     }
   | {
       type: "SOCKET_DISCONNECT";
@@ -61,11 +66,11 @@ export const createSocketMiddleware = (url: string): Middleware => {
           connection = null;
         });
 
-        connection.on("roomStateChange", (roomState: RoomUser[]) => {
+        connection.on("roomStateChange", (roomState: RoomState) => {
           dispatch({ type: "GAME_ROOM_STATE", payload: roomState });
           dispatch({
             type: "GAME_HOST_USER",
-            payload: roomState.find(
+            payload: roomState.membersState.find(
               (roomUser) => roomUser.username === username
             ),
           });
@@ -99,6 +104,18 @@ export const createSocketMiddleware = (url: string): Middleware => {
           }
 
           action.payload.onComplete();
+        });
+
+        return;
+      case "SOCKET_UPDATE_CLIPBOARD":
+        emitEvent<undefined>(
+          connection,
+          "updateClipboard",
+          action.payload
+        ).then((event) => {
+          if (event.status !== "ok") {
+            console.error(event.failMessage);
+          }
         });
 
         return;

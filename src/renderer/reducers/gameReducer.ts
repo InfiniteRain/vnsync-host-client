@@ -1,9 +1,10 @@
+import { RoomState } from "../interfaces/RoomState";
 import { RoomUser } from "../interfaces/RoomUser";
 
 export interface GameState {
   isHosting: boolean;
   roomName: string;
-  roomState: RoomUser[];
+  roomState: RoomState;
   hostUser: RoomUser | null;
 }
 
@@ -18,7 +19,7 @@ export type GameAction =
     }
   | {
       type: "GAME_ROOM_STATE";
-      payload: RoomUser[];
+      payload: RoomState;
     }
   | {
       type: "GAME_HOST_USER";
@@ -31,7 +32,10 @@ export type GameAction =
 const initialState: GameState = {
   isHosting: false,
   roomName: "",
-  roomState: [],
+  roomState: {
+    clipboard: [],
+    membersState: [],
+  },
   hostUser: null,
 };
 

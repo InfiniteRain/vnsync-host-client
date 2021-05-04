@@ -32,16 +32,6 @@ const useStyles = makeStyles((theme) => ({
   form: {
     marginTop: theme.spacing(1),
   },
-  panel: {
-    width: "100%",
-    height: "100%",
-    padding: theme.spacing(1),
-  },
-  partialPanel: {
-    width: "100%",
-    height: "50%",
-    padding: theme.spacing(1),
-  },
   alert: {
     width: "100%",
     marginTop: theme.spacing(1),

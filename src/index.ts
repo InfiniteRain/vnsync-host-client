@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, clipboard } from "electron";
 import {
   getOpenedWindows,
   windowExists,
@@ -47,6 +47,10 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
+});
+
+ipcMain.handle("getCurrentClipboardEntry", async () => {
+  return clipboard.readText();
 });
 
 ipcMain.handle("getOpenedWindows", () => {

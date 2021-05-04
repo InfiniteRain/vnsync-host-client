@@ -4,6 +4,40 @@ import { CombinedAction, CombinedState } from "../reducers";
 import { SettingsState } from "../reducers/settingsReducer";
 import { Window } from "../interfaces/Window";
 import { GameState } from "../reducers/gameReducer";
+import {
+  Box,
+  Button,
+  Grid,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  makeStyles,
+  Paper,
+} from "@material-ui/core";
+import DoneOutline from "@material-ui/icons/DoneOutline";
+import Clear from "@material-ui/icons/Clear";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    height: "100vh",
+  },
+  panel: {
+    width: "100%",
+    height: "100%",
+    maxHeight: "100vh",
+    padding: theme.spacing(1),
+    overflow: "auto",
+  },
+  partialPanel: {
+    width: "100%",
+    height: "50%",
+    padding: theme.spacing(1),
+  },
+  button: {
+    height: "100%",
+  },
+}));
 
 export const Game = (): JSX.Element => {
   const [isLoading, setLoading] = useState(false);
@@ -13,6 +47,9 @@ export const Game = (): JSX.Element => {
 
   const socketToggleReady = (onComplete: () => void): void => {
     dispatch({ type: "SOCKET_TOGGLE_READY", payload: { onComplete } });
+  };
+  const socketUpdateClipboard = (clipboardEntry: string): void => {
+    dispatch({ type: "SOCKET_UPDATE_CLIPBOARD", payload: clipboardEntry });
   };
 
   const gameState = useSelector<CombinedState, GameState>(
@@ -46,6 +83,21 @@ export const Game = (): JSX.Element => {
     vnSync.getOpenedWindows().then((windows) => {
       setWindows(windows);
     });
+
+    let lastClipboardEntry: string | null = null;
+    const clipboardInterval = setInterval(async () => {
+      const clipboardEntry = await vnSync.getCurrentClipboardEntry();
+
+      if (
+        lastClipboardEntry !== clipboardEntry &&
+        lastClipboardEntry !== null
+      ) {
+        socketUpdateClipboard(clipboardEntry);
+      }
+
+      lastClipboardEntry = clipboardEntry;
+    }, 100);
+    return () => clearInterval(clipboardInterval);
   }, []);
 
   const toggleReady = async () => {
@@ -63,9 +115,116 @@ export const Game = (): JSX.Element => {
     });
   };
 
+  const classes = useStyles();
+
+  return (
+    <Grid container className={classes.root}>
+      <Grid item xs={4}>
+        <Box className={classes.partialPanel}>
+          <Paper className={classes.panel} square>
+            <List dense>
+              {gameState.roomState.membersState.map((roomUser) => (
+                <ListItem>
+                  <ListItemIcon>
+                    {roomUser.isReady ? <DoneOutline /> : <Clear />}
+                  </ListItemIcon>
+                  <ListItemText primary={roomUser.username} />
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        </Box>
+        <Box className={classes.partialPanel}>
+          <Paper className={classes.panel} square>
+            <Button
+              fullWidth
+              variant="contained"
+              color={gameState.hostUser.isReady ? undefined : "primary"}
+              className={classes.button}
+              onClick={toggleReady}
+            >
+              {gameState.hostUser.isReady ? "Unready" : "Ready"}
+            </Button>
+          </Paper>
+        </Box>
+      </Grid>
+      <Grid item xs={8}>
+        <Box className={classes.panel}>
+          <Paper className={classes.panel} square>
+            <h3>Room name: {gameState.roomName}</h3>
+            <hr />
+            <select
+              disabled={isLoading}
+              onChange={(e) => {
+                setSettingSelectedWindow(Number.parseInt(e.target.value));
+              }}
+              defaultValue={settingsState.selectedWindow}
+            >
+              <option value="0">-</option>
+              {windows.map((window) => (
+                <option value={window.handle}>{window.title}</option>
+              ))}
+            </select>
+            &nbsp;
+            <button
+              disabled={isLoading}
+              onClick={async () => {
+                setWindows(await vnSync.getOpenedWindows());
+              }}
+            >
+              Refresh windows
+            </button>
+            <br />
+            <label>Double click: </label>
+            <input
+              type="checkbox"
+              checked={settingsState.isDoubleClick}
+              onChange={(e) => {
+                setSettingDoubleClick(e.target.checked);
+              }}
+            />
+            <br />
+            <label>Time between input press up and down: </label>
+            <input
+              type="number"
+              value={settingsState.timeoutBetweenDownAndUp}
+              onChange={(e) => {
+                setSettingTimeoutBdau(Number.parseInt(e.target.value));
+              }}
+            />
+            <br />
+            <label>Time between window activation and input: </label>
+            <input
+              type="number"
+              value={settingsState.timeoutBetweenActivationAndInput}
+              onChange={(e) => {
+                setSettingTimeoutBaai(Number.parseInt(e.target.value));
+              }}
+            />
+            <br />
+            <label>Input type: </label>
+            <select
+              value={settingsState.type}
+              onChange={(e) => {
+                setSettingInputType(e.target.value as SettingsState["type"]);
+              }}
+            >
+              <option value="enterKeyPress">Enter key press</option>
+              <option value="leftMouseClick">Left mouse click</option>
+            </select>
+            <hr />
+            {gameState.roomState.clipboard.map((clipboardEntry) => (
+              <p>{clipboardEntry}</p>
+            ))}
+          </Paper>
+        </Box>
+      </Grid>
+    </Grid>
+  );
+  /*
   return (
     <>
-      <h3>Room name: {gameState.roomName}</h3>
+     
       <ul>
         {gameState.roomState.map((roomUser) => (
           <li key={roomUser.username}>
@@ -74,90 +233,9 @@ export const Game = (): JSX.Element => {
         ))}
       </ul>
       <button onClick={toggleReady} disabled={isLoading}>
-        {gameState.hostUser.isReady ? "Unready" : "Ready"}
+        
       </button>
-      <hr />
-      <select
-        disabled={isLoading}
-        onChange={(e) => {
-          setSettingSelectedWindow(Number.parseInt(e.target.value));
-        }}
-        defaultValue={settingsState.selectedWindow}
-      >
-        <option value="0">-</option>
-        {windows.map((window) => (
-          <option value={window.handle}>{window.title}</option>
-        ))}
-      </select>
-      &nbsp;
-      <button
-        disabled={isLoading}
-        onClick={async () => {
-          setWindows(await vnSync.getOpenedWindows());
-        }}
-      >
-        Refresh windows
-      </button>
-      <br />
-      <label>Double click: </label>
-      <input
-        type="checkbox"
-        checked={settingsState.isDoubleClick}
-        onChange={(e) => {
-          setSettingDoubleClick(e.target.checked);
-        }}
-      />
-      <br />
-      <label>Time between input press up and down: </label>
-      <input
-        type="number"
-        value={settingsState.timeoutBetweenDownAndUp}
-        onChange={(e) => {
-          setSettingTimeoutBdau(Number.parseInt(e.target.value));
-        }}
-      />
-      <br />
-      <label>Time between window activation and input: </label>
-      <input
-        type="number"
-        value={settingsState.timeoutBetweenActivationAndInput}
-        onChange={(e) => {
-          setSettingTimeoutBaai(Number.parseInt(e.target.value));
-        }}
-      />
-      <br />
-      <label>Input type: </label>
-      <select
-        value={settingsState.type}
-        onChange={(e) => {
-          setSettingInputType(e.target.value as SettingsState["type"]);
-        }}
-      >
-        <option value="enterKeyPress">Enter key press</option>
-        <option value="leftMouseClick">Left mouse click</option>
-      </select>
+      
     </>
-  );
-
-  /*<Grid container className={classes.root}>
-          <Grid item xs={6}>
-            <Box className={classes.partialPanel}>
-              <Paper className={classes.panel} square>
-                1
-              </Paper>
-            </Box>
-            <Box className={classes.partialPanel}>
-              <Paper className={classes.panel} square>
-                2
-              </Paper>
-            </Box>
-          </Grid>
-          <Grid item xs={6}>
-            <Box className={classes.panel}>
-              <Paper className={classes.panel} square>
-                3
-              </Paper>
-            </Box>
-          </Grid>
-        </Grid> */
+  );*/
 };

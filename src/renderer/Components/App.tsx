@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { CssBaseline, ThemeProvider, createMuiTheme } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
 import { Route, HashRouter, Redirect } from "react-router-dom";
