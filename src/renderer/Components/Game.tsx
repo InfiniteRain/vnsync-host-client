@@ -23,6 +23,8 @@ import DoneOutline from "@material-ui/icons/DoneOutline";
 import Clear from "@material-ui/icons/Clear";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { toggleReady, updateClipboard } from "../redux/socketActions";
+import { useHistory } from "react-router";
+import { connectionEventEmitter } from "../redux/socketLogic";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -50,6 +52,7 @@ export const Game = (): JSX.Element => {
   const [windows, setWindows] = useState<Window[]>([]);
 
   const dispatch = useAppDispatch();
+  const history = useHistory();
 
   const gameState = useAppSelector((state) => state.game);
   const settingsState = useAppSelector((state) => state.settings);
@@ -63,6 +66,7 @@ export const Game = (): JSX.Element => {
     });
 
     let lastClipboardEntry: string | null = null;
+
     const clipboardInterval = setInterval(async () => {
       const clipboardEntry = await vnSync.getCurrentClipboardEntry();
 
@@ -75,7 +79,32 @@ export const Game = (): JSX.Element => {
 
       lastClipboardEntry = clipboardEntry;
     }, 100);
-    return () => clearInterval(clipboardInterval);
+
+    const onReconnectAttempt = () => {
+      setLoading(true);
+    };
+
+    const onReconnect = () => {
+      setLoading(false);
+    };
+
+    const onDisconnect = () => {
+      history.push("/");
+    };
+
+    connectionEventEmitter.on("reconnectAttempt", onReconnectAttempt);
+    connectionEventEmitter.on("reconnect", onReconnect);
+    connectionEventEmitter.on("disconnect", onDisconnect);
+
+    return () => {
+      clearInterval(clipboardInterval);
+      connectionEventEmitter.removeListener(
+        "reconnectAttempt",
+        onReconnectAttempt
+      );
+      connectionEventEmitter.removeListener("reconnect", onReconnect);
+      connectionEventEmitter.removeListener("disconnect", onDisconnect);
+    };
   }, []);
 
   const onToggleReady = async () => {
@@ -124,6 +153,7 @@ export const Game = (): JSX.Element => {
               color={gameState.hostUser?.isReady ? undefined : "primary"}
               className={classes.button}
               onClick={onToggleReady}
+              disabled={isLoading}
             >
               {gameState.hostUser?.isReady ? "Unready" : "Ready"}
             </Button>

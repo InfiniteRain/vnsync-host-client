@@ -16,8 +16,11 @@ import {
   ToggleReadyAction,
   UpdateClipboardAction,
 } from "./socketActions";
+import { EventEmitter } from "events";
 
 let connection: Socket | null = null;
+
+export const connectionEventEmitter = new EventEmitter();
 
 export const socketConnect = (
   url: string,
@@ -28,11 +31,43 @@ export const socketConnect = (
 
   const dispatch = storeApi.dispatch;
   const username = payload.username;
+  let connected = false;
 
-  connection = io(url);
+  connection = io(url, {
+    reconnection: true,
+    reconnectionDelay: 500,
+    autoConnect: false,
+    reconnectionAttempts: 5,
+  });
+
+  connection.io.on("reconnect_attempt", () => {
+    assertNotNull<Socket>(connection, "connection");
+
+    console.log(connection.auth);
+    console.log("reconnect attempt");
+
+    connectionEventEmitter.emit("reconnectAttempt");
+  });
+
+  connection.io.on("reconnect_failed", () => {
+    console.log("reconnect failed");
+
+    dispatch(reset());
+    dispatch(disconnect());
+  });
+
+  connection.io.on("reconnect", () => {
+    console.log("reconnect successful");
+
+    connectionEventEmitter.emit("reconnect");
+  });
 
   connection.on("connect", async () => {
     assertNotNull<Socket>(connection, "connection");
+
+    if (connected) {
+      return;
+    }
 
     const result = await emitEvent<string>(connection, "createRoom", username);
 
@@ -45,9 +80,19 @@ export const socketConnect = (
     dispatch(setRoomName(result.data));
     dispatch(setHosting(true));
     payload.onComplete?.();
+
+    connected = true;
   });
 
-  connection.on("disconnect", () => {
+  connection.on("disconnect", (reason: string) => {
+    if (reason !== "io server disconnect") {
+      console.log("reconnecting...?");
+
+      connectionEventEmitter.emit("reconnectAttempt");
+
+      return;
+    }
+
     dispatch(reset());
     dispatch(disconnect());
   });
@@ -94,6 +139,17 @@ export const socketConnect = (
     console.error(error);
     payload.onError?.("Conncetion error.");
   });
+
+  connection.on("sessionId", (sessionId: string) => {
+    assertNotNull<Socket>(connection, "connection");
+
+    console.log(`Received sessionId: ${sessionId}`);
+    connection.auth = {
+      sessionId,
+    };
+  });
+
+  connection.connect();
 };
 
 export const socketToggleReady = (
@@ -128,4 +184,6 @@ export const socketDisconnect = (): void => {
 
   connection.disconnect();
   connection = null;
+
+  connectionEventEmitter.emit("disconnect");
 };
