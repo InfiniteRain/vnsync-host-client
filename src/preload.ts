@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { SettingsState } from "./renderer/reducers/settingsReducer";
+import { SettingsState } from "./renderer/redux/settingsReducer";
 
 contextBridge.exposeInMainWorld("vnSync", {
   getCurrentClipboardEntry: async () =>

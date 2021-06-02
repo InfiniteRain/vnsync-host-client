@@ -11,7 +11,6 @@ import {
   enterKeyDown,
   enterKeyUp,
 } from "vnsync-win32-lib";
-import { SettingsState } from "./renderer/reducers/settingsReducer";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -61,7 +60,14 @@ ipcMain.handle("windowExists", (_, handle: number) => {
   return windowExists(handle);
 });
 
-const leftMouseClick = async (handle: number, inputSettings: SettingsState) => {
+interface InputSettings {
+  type: "leftMouseClick" | "enterKeyPress";
+  isDoubleClick: boolean;
+  timeoutBetweenDownAndUp: number;
+  timeoutBetweenActivationAndInput: number;
+}
+
+const leftMouseClick = async (handle: number, inputSettings: InputSettings) => {
   const {
     isDoubleClick,
     timeoutBetweenDownAndUp,
@@ -99,7 +105,7 @@ const leftMouseClick = async (handle: number, inputSettings: SettingsState) => {
   setCursorPosition(oldCursorPosition.x, oldCursorPosition.y);
 };
 
-const enterKeyPress = async (handle: number, inputSettings: SettingsState) => {
+const enterKeyPress = async (handle: number, inputSettings: InputSettings) => {
   const {
     timeoutBetweenDownAndUp,
     timeoutBetweenActivationAndInput,
@@ -120,7 +126,7 @@ const enterKeyPress = async (handle: number, inputSettings: SettingsState) => {
 
 ipcMain.handle(
   "initiateInput",
-  async (_, handle: number, inputSettings: SettingsState) => {
+  async (_, handle: number, inputSettings: InputSettings) => {
     if (!windowExists(handle)) {
       throw new Error("Incorrect window handle.");
     }

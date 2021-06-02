@@ -17,3 +17,21 @@ export const emitEvent = async <T = undefined>(
 export const sleep = async (time: number): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, time));
 };
+
+export function assertNull<T>(
+  value: T | null,
+  name: string
+): asserts value is null {
+  if (value !== null) {
+    throw new Error(`Value of "${name}" is not null.`);
+  }
+}
+
+export function assertNotNull<T>(
+  value: T | null,
+  name: string
+): asserts value is T {
+  if (value === null) {
+    throw new Error(`Value of "${name}" is null.`);
+  }
+}

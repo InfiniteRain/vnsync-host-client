@@ -7,13 +7,15 @@ import {
   TextField,
   Button,
 } from "@material-ui/core";
-import { Alert, AlertTitle } from "@material-ui/lab";
+import { Alert } from "@material-ui/lab";
 import PersonalVideoOutlined from "@material-ui/icons/PersonalVideoOutlined";
-import React, { Dispatch, FormEvent, useState } from "react";
-import { useDispatch, useSelector, useStore } from "react-redux";
+import React, { FormEvent, useState } from "react";
+import { useStore } from "react-redux";
 import { useHistory } from "react-router-dom";
-import { CombinedAction, CombinedState } from "../reducers";
-import { InputsState } from "../reducers/inputsReducer";
+import { setUsername } from "../redux/inputsReducer";
+import { RootState } from "../redux/store";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { connect } from "../redux/socketActions";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -43,43 +45,37 @@ export const Startup = (): JSX.Element => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const history = useHistory();
-  const dispatch = useDispatch<Dispatch<CombinedAction>>();
-  const store = useStore<CombinedState>();
+  const dispatch = useAppDispatch();
+
+  const store = useStore<RootState>();
   const state = store.getState();
 
-  const connect = (username: string) => {
+  const onConnect = (username: string) => {
     setLoading(true);
-    dispatch({
-      type: "SOCKET_CONNECT",
-      payload: {
+    dispatch(
+      connect({
         username,
-        onComplete: () => {
+        onComplete() {
           setLoading(false);
           history.push("/game");
         },
-        onError: (message: string) => {
+        onError(message: string) {
           setLoading(false);
           setErrorMessage(message);
         },
-      },
-    });
+      })
+    );
   };
 
-  const inputState = useSelector<CombinedState, InputsState>(
-    (state) => state.inputs
-  );
-
-  const setInputUsername = (username: string) => {
-    dispatch({ type: "INPUT_USERNAME", payload: username });
-  };
+  const inputState = useAppSelector((state) => state.inputs);
 
   const initalizeConnection = () => {
-    const state: CombinedState["inputs"] = store.getState().inputs;
+    const state: RootState["inputs"] = store.getState().inputs;
 
     const username = state.username.trim();
 
     if (username.length > 0) {
-      connect(username);
+      onConnect(username);
     }
   };
 
@@ -119,7 +115,7 @@ export const Startup = (): JSX.Element => {
                 autoFocus
                 value={inputState.username}
                 onChange={(e) => {
-                  setInputUsername(e.target.value);
+                  dispatch(setUsername(e.target.value));
                 }}
                 disabled={isLoading}
               />

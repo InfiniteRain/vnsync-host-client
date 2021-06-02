@@ -1,9 +1,13 @@
-import React, { Dispatch, useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { CombinedAction, CombinedState } from "../reducers";
-import { SettingsState } from "../reducers/settingsReducer";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  setDoubleClick,
+  setInputType,
+  setSelectedWindow,
+  setTimeoutBaai,
+  setTimeoutBdau,
+  SettingsState,
+} from "../redux/settingsReducer";
 import { Window } from "../interfaces/Window";
-import { GameState } from "../reducers/gameReducer";
 import {
   Box,
   Button,
@@ -17,6 +21,8 @@ import {
 } from "@material-ui/core";
 import DoneOutline from "@material-ui/icons/DoneOutline";
 import Clear from "@material-ui/icons/Clear";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { toggleReady, updateClipboard } from "../redux/socketActions";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -43,38 +49,10 @@ export const Game = (): JSX.Element => {
   const [isLoading, setLoading] = useState(false);
   const [windows, setWindows] = useState<Window[]>([]);
 
-  const dispatch = useDispatch<Dispatch<CombinedAction>>();
+  const dispatch = useAppDispatch();
 
-  const socketToggleReady = (onComplete: () => void): void => {
-    dispatch({ type: "SOCKET_TOGGLE_READY", payload: { onComplete } });
-  };
-  const socketUpdateClipboard = (clipboardEntry: string): void => {
-    dispatch({ type: "SOCKET_UPDATE_CLIPBOARD", payload: clipboardEntry });
-  };
-
-  const gameState = useSelector<CombinedState, GameState>(
-    (state) => state.game
-  );
-
-  const settingsState = useSelector<CombinedState, SettingsState>(
-    (state) => state.settings
-  );
-
-  const setSettingSelectedWindow = (handle: number) => {
-    dispatch({ type: "SETTING_SELECTED_WINDOW", payload: handle });
-  };
-  const setSettingInputType = (type: "enterKeyPress" | "leftMouseClick") => {
-    dispatch({ type: "SETTING_INPUT_TYPE", payload: type });
-  };
-  const setSettingDoubleClick = (enabled: boolean) => {
-    dispatch({ type: "SETTING_DOUBLE_CLICK", payload: enabled });
-  };
-  const setSettingTimeoutBdau = (timeout: number) => {
-    dispatch({ type: "SETTING_TIMEOUT_BDAU", payload: timeout });
-  };
-  const setSettingTimeoutBaai = (timeout: number) => {
-    dispatch({ type: "SETTING_TIMEOUT_BAAI", payload: timeout });
-  };
+  const gameState = useAppSelector((state) => state.game);
+  const settingsState = useAppSelector((state) => state.settings);
 
   const selectedWindowRef = useRef(0);
   selectedWindowRef.current = settingsState.selectedWindow;
@@ -92,7 +70,7 @@ export const Game = (): JSX.Element => {
         lastClipboardEntry !== clipboardEntry &&
         lastClipboardEntry !== null
       ) {
-        socketUpdateClipboard(clipboardEntry);
+        dispatch(updateClipboard(clipboardEntry));
       }
 
       lastClipboardEntry = clipboardEntry;
@@ -100,7 +78,7 @@ export const Game = (): JSX.Element => {
     return () => clearInterval(clipboardInterval);
   }, []);
 
-  const toggleReady = async () => {
+  const onToggleReady = async () => {
     setLoading(true);
 
     const handle = selectedWindowRef.current;
@@ -110,9 +88,13 @@ export const Game = (): JSX.Element => {
       await vnSync.activateWindow(handle);
     }
 
-    socketToggleReady(() => {
-      setLoading(false);
-    });
+    dispatch(
+      toggleReady({
+        onComplete() {
+          setLoading(false);
+        },
+      })
+    );
   };
 
   const classes = useStyles();
@@ -139,11 +121,11 @@ export const Game = (): JSX.Element => {
             <Button
               fullWidth
               variant="contained"
-              color={gameState.hostUser.isReady ? undefined : "primary"}
+              color={gameState.hostUser?.isReady ? undefined : "primary"}
               className={classes.button}
-              onClick={toggleReady}
+              onClick={onToggleReady}
             >
-              {gameState.hostUser.isReady ? "Unready" : "Ready"}
+              {gameState.hostUser?.isReady ? "Unready" : "Ready"}
             </Button>
           </Paper>
         </Box>
@@ -156,7 +138,7 @@ export const Game = (): JSX.Element => {
             <select
               disabled={isLoading}
               onChange={(e) => {
-                setSettingSelectedWindow(Number.parseInt(e.target.value));
+                dispatch(setSelectedWindow(Number(e.target.value)));
               }}
               defaultValue={settingsState.selectedWindow}
             >
@@ -180,7 +162,7 @@ export const Game = (): JSX.Element => {
               type="checkbox"
               checked={settingsState.isDoubleClick}
               onChange={(e) => {
-                setSettingDoubleClick(e.target.checked);
+                dispatch(setDoubleClick(e.target.checked));
               }}
             />
             <br />
@@ -189,7 +171,7 @@ export const Game = (): JSX.Element => {
               type="number"
               value={settingsState.timeoutBetweenDownAndUp}
               onChange={(e) => {
-                setSettingTimeoutBdau(Number.parseInt(e.target.value));
+                dispatch(setTimeoutBdau(Number(e.target.value)));
               }}
             />
             <br />
@@ -198,15 +180,17 @@ export const Game = (): JSX.Element => {
               type="number"
               value={settingsState.timeoutBetweenActivationAndInput}
               onChange={(e) => {
-                setSettingTimeoutBaai(Number.parseInt(e.target.value));
+                dispatch(setTimeoutBaai(Number(e.target.value)));
               }}
             />
             <br />
             <label>Input type: </label>
             <select
-              value={settingsState.type}
+              value={settingsState.inputType}
               onChange={(e) => {
-                setSettingInputType(e.target.value as SettingsState["type"]);
+                dispatch(
+                  setInputType(e.target.value as SettingsState["inputType"])
+                );
               }}
             >
               <option value="enterKeyPress">Enter key press</option>
@@ -221,21 +205,4 @@ export const Game = (): JSX.Element => {
       </Grid>
     </Grid>
   );
-  /*
-  return (
-    <>
-     
-      <ul>
-        {gameState.roomState.map((roomUser) => (
-          <li key={roomUser.username}>
-            {roomUser.username} - {!roomUser.isReady && "not"} ready
-          </li>
-        ))}
-      </ul>
-      <button onClick={toggleReady} disabled={isLoading}>
-        
-      </button>
-      
-    </>
-  );*/
 };

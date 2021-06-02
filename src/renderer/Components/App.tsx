@@ -1,12 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { CssBaseline, ThemeProvider, createMuiTheme } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
 import { Route, HashRouter, Redirect } from "react-router-dom";
 import { Startup } from "./Startup";
 import { Game } from "./Game";
-import { useSelector } from "react-redux";
-import { CombinedState } from "../reducers";
-import { GameState } from "../reducers/gameReducer";
+import { useAppSelector } from "../redux/hooks";
 
 const theme = createMuiTheme({
   palette: {
@@ -16,9 +14,7 @@ const theme = createMuiTheme({
 });
 
 export const App = (): JSX.Element => {
-  const gameState = useSelector<CombinedState, GameState>(
-    (state) => state.game
-  );
+  const gameState = useAppSelector((state) => state.game);
 
   return (
     <HashRouter>
