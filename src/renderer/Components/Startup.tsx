@@ -1,11 +1,11 @@
 import {
   Avatar,
-  Grid,
   Paper,
   makeStyles,
   Typography,
   TextField,
   Button,
+  Box,
 } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import PersonalVideoOutlined from "@material-ui/icons/PersonalVideoOutlined";
@@ -88,55 +88,52 @@ export const Startup = (): JSX.Element => {
 
   return (
     <>
-      <Grid
-        container
-        spacing={0}
-        direction="column"
+      <Box
+        display="flex"
+        justifyContent="center"
         alignItems="center"
-        justify="center"
+        flexDirection="columns"
         className={classes.root}
       >
-        <Grid item xs={6}>
-          <Paper className={classes.paper} elevation={3} variant="outlined">
-            <Avatar className={classes.avatar}>
-              <PersonalVideoOutlined />
-            </Avatar>
-            <Typography component="h1" variant="h5">
-              VNSync Host
-            </Typography>
-            <form className={classes.form} noValidate onSubmit={onSubmit}>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                label="Username"
-                autoComplete="username"
-                autoFocus
-                value={inputState.username}
-                onChange={(e) => {
-                  dispatch(setUsername(e.target.value));
-                }}
-                disabled={isLoading}
-              />
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={initalizeConnection}
-                disabled={isLoading || state.inputs.username.trim().length <= 0}
-              >
-                Start Room
-              </Button>
-            </form>
-            {errorMessage !== "" && (
-              <Alert severity="error" className={classes.alert}>
-                {errorMessage}
-              </Alert>
-            )}
-          </Paper>
-        </Grid>
-      </Grid>
+        <Paper className={classes.paper} elevation={3} variant="outlined">
+          <Avatar className={classes.avatar}>
+            <PersonalVideoOutlined />
+          </Avatar>
+          <Typography component="h1" variant="h5">
+            VNSync Host
+          </Typography>
+          <form className={classes.form} noValidate onSubmit={onSubmit}>
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              label="Username"
+              autoComplete="username"
+              autoFocus
+              value={inputState.username}
+              onChange={(e) => {
+                dispatch(setUsername(e.target.value));
+              }}
+              disabled={isLoading}
+            />
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              onClick={initalizeConnection}
+              disabled={isLoading || state.inputs.username.trim().length <= 0}
+            >
+              Start Room
+            </Button>
+          </form>
+          {errorMessage !== "" && (
+            <Alert severity="error" className={classes.alert}>
+              {errorMessage}
+            </Alert>
+          )}
+        </Paper>
+      </Box>
     </>
   );
 };
